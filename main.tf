@@ -61,7 +61,7 @@ resource "aws_launch_configuration" "launch" {
 
 resource "aws_autoscaling_group" "ats" {
   name                 = "autoscalingV"
-  launch_configuration = aws_launch_configuration.example.name
+  launch_configuration = aws_launch_configuration.launch.name
   min_size             = var.min_size
   max_size             = var.max_size
   desired_capacity     = var.desired_capacity
@@ -84,7 +84,7 @@ resource "aws_lb_target_group" "example" {
 }
 
 resource "aws_lb_listener" "example" {
-  load_balancer_arn = aws_lb.example.arn
+  load_balancer_arn = aws_lb.lb.arn
   port              = 80
   default_action {
     target_group_arn = aws_lb_target_group.example.arn
