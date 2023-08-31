@@ -114,7 +114,7 @@ resource "aws_lb" "lb" {
 resource "aws_lb_target_group" "example" {
   name     = "example-tg"
   port     = 80
-  protocol = "tcp"
+  protocol = "TCP"
   vpc_id   = aws_vpc.custom_vpc.id 
 }
 
