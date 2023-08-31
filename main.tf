@@ -71,6 +71,7 @@ resource "aws_lb" "lb" {
   name               = "TVAlb"
   internal           = false
   load_balancer_type = "application"
+  security_groups = ["sg-07a4217e3560b8a35"]
   subnets            = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]  # Replace with your subnet IDs
 }
 
@@ -86,6 +87,7 @@ resource "aws_launch_configuration" "launch" {
   name_prefix   = "launch-cfg"
   image_id      = var.ami_id
   instance_type = var.instance_type
+  security_groups = [ "sg-07a4217e3560b8a35" ]
 }
 
 resource "aws_autoscaling_group" "ats" {
