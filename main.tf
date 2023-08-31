@@ -143,12 +143,7 @@ resource "aws_lb_listener" "listener" {
   port              = 80
   default_action {
     target_group_arn = aws_lb_target_group.example.arn
-    type             = "fixed-response"
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Service unavailable"
-      status_code  = "503"
-    }
+    type= "forward"
   }
 }
 
