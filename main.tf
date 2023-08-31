@@ -123,6 +123,15 @@ resource "aws_launch_configuration" "launch" {
   name_prefix   = "launch-cfg"
   image_id      = var.ami_id
   instance_type = var.instance_type
+
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo apt update
+              sudo install nginx -y
+              sudo systemctl start nginx
+              sudo systemctl enable nginx
+              EOF
+
   security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id, aws_security_group.allow_https.id ]
 }
 
