@@ -62,21 +62,8 @@ resource "aws_route" "internet_gateway" {
   gateway_id             = aws_internet_gateway.ig.id
 }
 
-//auto scaling and launch group
-resource "aws_launch_configuration" "launch" {
-  name_prefix   = "launch-cfg"
-  image_id      = var.ami_id
-  instance_type = var.instance_type
-}
 
-resource "aws_autoscaling_group" "ats" {
-  name                 = "autoscalingV"
-  launch_configuration = aws_launch_configuration.launch.name
-  min_size             = var.min_size
-  max_size             = var.max_size
-  desired_capacity     = var.desired_capacity
-  vpc_zone_identifier = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]
-}
+
 
 
 //load balancer
@@ -94,7 +81,26 @@ resource "aws_lb_target_group" "example" {
   vpc_id   = aws_vpc.custom_vpc.id # Replace with your VPC ID
 }
 
-resource "aws_lb_listener" "example" {
+//auto scaling and launch group
+resource "aws_launch_configuration" "launch" {
+  name_prefix   = "launch-cfg"
+  image_id      = var.ami_id
+  instance_type = var.instance_type
+}
+
+resource "aws_autoscaling_group" "ats" {
+  name                 = "autoscalingV"
+  launch_configuration = aws_launch_configuration.launch.name
+  min_size             = var.min_size
+  max_size             = var.max_size
+  desired_capacity     = var.desired_capacity
+  vpc_zone_identifier = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]
+  
+  target_group_arns = aws_lb_target_group.example.id
+}
+
+//loadbalancer listener
+resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.lb.arn
   port              = 80
   default_action {
