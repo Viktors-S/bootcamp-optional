@@ -118,6 +118,10 @@ resource "aws_lb_target_group" "example" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.custom_vpc.id 
+
+  lifecycle {
+    replace_triggered_by = [ aws_lb.lb.id ]
+  }
 }
 
 //auto scaling and launch group
@@ -127,6 +131,10 @@ resource "aws_launch_configuration" "launch" {
   instance_type = var.instance_type
 
   security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id]
+
+  lifecycle {
+    replace_triggered_by = [ aws_lb_target_group.example.id ]
+  }
 }
 
 resource "aws_autoscaling_group" "ats" {
@@ -138,6 +146,10 @@ resource "aws_autoscaling_group" "ats" {
   vpc_zone_identifier = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]
   
   target_group_arns = [aws_lb_target_group.example.id]
+
+  lifecycle {
+    replace_triggered_by = [ aws_launch_configuration.launch.id, aws_lb_target_group.example.id ]
+  }
 }
 
 //loadbalancer listener
@@ -147,6 +159,10 @@ resource "aws_lb_listener" "listener" {
   default_action {
     target_group_arn = aws_lb_target_group.example.arn
     type= "forward"
+  }
+
+  lifecycle {
+    replace_triggered_by = [ aws_lb_target_group.example.id, aws_autoscaling_group.ats.id ]
   }
 }
 

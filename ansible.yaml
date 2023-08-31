@@ -1,0 +1,41 @@
+---
+- name: Deploy WordPress
+  hosts: web_servers
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name: ['apache2', 'mysql-server', 'php', 'php-mysql', 'php-curl']
+
+    - name: Start and enable Apache
+      systemd:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Start and enable MySQL
+      systemd:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Download and extract WordPress
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: /var/www/html/
+        remote_src: yes
+
+    - name: Copy wp-config.php
+      template:
+        src: wp-config.php.j2
+        dest: /var/www/html/wordpress/wp-config.php
+
+    - name: Restart Apache
+      systemd:
+        name: apache2
+        state: restarted
