@@ -83,23 +83,6 @@ resource "aws_security_group" "allow_http" {
   }
 }
 
-resource "aws_security_group" "allow_https" {
-  name_prefix = "allow-https"
-  vpc_id      = aws_vpc.custom_vpc.id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 
 resource "aws_security_group" "allow_ssh" {
   name_prefix = "allow-ssh"
@@ -126,7 +109,7 @@ resource "aws_lb" "lb" {
   name               = "TVAlb"
   internal           = false
   load_balancer_type = "application"
-  security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id, aws_security_group.allow_https.id ]
+  security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id]
   subnets            = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id] 
 }
 
@@ -143,7 +126,7 @@ resource "aws_launch_configuration" "launch" {
   image_id      = var.ami_id
   instance_type = var.instance_type
 
-  security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id, aws_security_group.allow_https.id ]
+  security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id]
 }
 
 resource "aws_autoscaling_group" "ats" {
