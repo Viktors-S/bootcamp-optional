@@ -64,6 +64,42 @@ resource "aws_route" "internet_gateway" {
 
 
 
+resource "aws_security_group" "allow_http" {
+  name_prefix = "allow-http"
+  vpc_id      = aws_vpc.custom_vpc.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "allow_https" {
+  name_prefix = "allow-https"
+  vpc_id      = aws_vpc.custom_vpc.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "allow_ssh" {
+  name_prefix = "allow-ssh"
+  vpc_id      = aws_vpc.custom_vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 
 
 //load balancer
@@ -71,7 +107,7 @@ resource "aws_lb" "lb" {
   name               = "TVAlb"
   internal           = false
   load_balancer_type = "application"
-  security_groups = ["sg-07a4217e3560b8a35"]
+  security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id, aws_security_group.allow_https.id ]
   subnets            = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]  # Replace with your subnet IDs
 }
 
@@ -87,7 +123,7 @@ resource "aws_launch_configuration" "launch" {
   name_prefix   = "launch-cfg"
   image_id      = var.ami_id
   instance_type = var.instance_type
-  security_groups = [ "sg-07a4217e3560b8a35" ]
+  security_groups = [ aws_security_group.allow_ssh.id, aws_security_group.allow_http.id, aws_security_group.allow_https.id ]
 }
 
 resource "aws_autoscaling_group" "ats" {
