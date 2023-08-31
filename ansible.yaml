@@ -1,41 +1,81 @@
 ---
-- name: Deploy WordPress
-  hosts: web_servers
+- name: Install required packages
+  hosts: wordpress
   become: yes
-
   tasks:
     - name: Update apt cache
-      apt:
-        update_cache: yes
+      apt: update_cache=yes
 
-    - name: Install required packages
+    - name: Install Apache, MySQL, PHP, and required PHP modules
       apt:
-        name: ['apache2', 'mysql-server', 'php', 'php-mysql', 'php-curl']
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apache2
+        - mysql-server
+        - php
+        - libapache2-mod-php
+        - php-mysql
+        - php-gd
+        - php-curl
 
-    - name: Start and enable Apache
-      systemd:
+    - name: Start and enable Apache service
+      service:
         name: apache2
         state: started
         enabled: yes
 
-    - name: Start and enable MySQL
-      systemd:
+    - name: Start and enable MySQL service
+      service:
         name: mysql
         state: started
         enabled: yes
 
-    - name: Download and extract WordPress
+- name: Install and configure WordPress
+  hosts: wordpress
+  become: yes
+  tasks:
+    - name: Download WordPress
+      get_url:
+        url: "https://wordpress.org/latest.tar.gz"
+        dest: "/tmp/wordpress.tar.gz"
+
+    - name: Extract WordPress archive
       unarchive:
-        src: https://wordpress.org/latest.tar.gz
-        dest: /var/www/html/
+        src: "/tmp/wordpress.tar.gz"
+        dest: "/var/www/html/"
         remote_src: yes
+        creates: "/var/www/html/wordpress"
 
-    - name: Copy wp-config.php
-      template:
-        src: wp-config.php.j2
-        dest: /var/www/html/wordpress/wp-config.php
+    - name: Set ownership and permissions
+      file:
+        path: "/var/www/html/wordpress"
+        owner: www-data
+        group: www-data
+        recurse: yes
 
-    - name: Restart Apache
-      systemd:
+    - name: Copy WordPress configuration file
+      copy:
+        src: "/var/www/html/wordpress/wp-config-sample.php"
+        dest: "/var/www/html/wordpress/wp-config.php"
+        owner: www-data
+        group: www-data
+
+    - name: Configure WordPress database settings
+      lineinfile:
+        path: "/var/www/html/wordpress/wp-config.php"
+        line: "{{ item }}"
+      with_items:
+        - "define('DB_NAME', 'wordpress')"
+        - "define('DB_USER', 'wordpress')"
+        - "define('DB_PASSWORD', 'your_database_password')"
+        - "define('DB_HOST', 'localhost')"
+
+- name: Restart Apache for changes to take effect
+  hosts: wordpress
+  become: yes
+  tasks:
+    - name: Restart Apache service
+      service:
         name: apache2
         state: restarted
