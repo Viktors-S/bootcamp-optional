@@ -96,7 +96,7 @@ resource "aws_autoscaling_group" "ats" {
   desired_capacity     = var.desired_capacity
   vpc_zone_identifier = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]
   
-  target_group_arns = aws_lb_target_group.example.id
+  target_group_arns = [aws_lb_target_group.example.id]
 }
 
 //loadbalancer listener
