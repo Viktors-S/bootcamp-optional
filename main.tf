@@ -52,6 +52,16 @@ resource "aws_subnet" "private_subnet" {
   }
 }
 
+resource "aws_internet_gateway" "ig" {
+  vpc_id = aws_vpc.custom_vpc  # Replace with your VPC ID
+}
+
+resource "aws_route" "internet_gateway" {
+  route_table_id         = aws_vpc.custom_vpc.main_route_table_id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.ig.id
+}
+
 //auto scaling and launch group
 resource "aws_launch_configuration" "launch" {
   name_prefix   = "launch-cfg"
@@ -65,6 +75,7 @@ resource "aws_autoscaling_group" "ats" {
   min_size             = var.min_size
   max_size             = var.max_size
   desired_capacity     = var.desired_capacity
+  vpc_zone_identifier = [aws_subnet.public_subnet.id,aws_subnet.public_subnet2.id]
 }
 
 
