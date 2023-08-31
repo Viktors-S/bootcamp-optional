@@ -1,6 +1,6 @@
 ---
 - name: Install required packages
-  hosts: wordpress
+  hosts: all
   become: yes
   tasks:
     - name: Update apt cache
@@ -32,7 +32,7 @@
         enabled: yes
 
 - name: Install and configure WordPress
-  hosts: wordpress
+  hosts: all
   become: yes
   tasks:
     - name: Download WordPress
