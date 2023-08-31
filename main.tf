@@ -53,7 +53,7 @@ resource "aws_subnet" "private_subnet" {
 }
 
 resource "aws_internet_gateway" "ig" {
-  vpc_id = aws_vpc.custom_vpc  # Replace with your VPC ID
+  vpc_id = aws_vpc.custom_vpc.id  # Replace with your VPC ID
 }
 
 resource "aws_route" "internet_gateway" {
